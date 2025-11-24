@@ -45,6 +45,28 @@ export const Home: React.FC = () => {
     dispatch(clearRecommendations());
   };
 
+  if (loading && selectedMood && selectedAction) {
+    const actionLabel = selectedAction === 'potenciar' ? 'potenciar' : 'contrarrestar';
+    return (
+      <div className="container mx-auto px-4 py-12 animate-fade-in">
+        <button
+          onClick={handleReset}
+          className="flex items-center gap-2 text-white hover:text-purple-400 transition-colors mb-6"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Cancelar y elegir otro estado</span>
+        </button>
+
+        <div className="card">
+          <LoadingSpinner
+            message={`Obteniendo películas para ${actionLabel} tu ${selectedMood.toLowerCase()}...`}
+            subtitle="Esto puede tardar unos segundos mientras encontramos coincidencias perfectas"
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (data && selectedAction) {
     return (
       <div className="container mx-auto px-4 py-8 animate-fade-in">
