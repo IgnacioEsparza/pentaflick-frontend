@@ -1,15 +1,56 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { MoodButton } from '../components/MoodButton';
 import { MovieCard } from '../components/MovieCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { Mood, Action } from '../types';
+import { Mood, Action, MovieType } from '../types';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchRecommendations, clearRecommendations } from '../store/recommendationsSlice';
 import { ArrowLeft, Sparkles, TrendingUp, TrendingDown } from 'lucide-react';
 
+interface MovieTypeSelectorProps {
+  movieType: MovieType;
+  options: { value: MovieType; label: string; description: string; badge: string }[];
+  onChange: (value: MovieType) => void;
+}
+
+const MovieTypeSelector: React.FC<MovieTypeSelectorProps> = ({ movieType, options, onChange }) => {
+  return (
+    <div className="mt-14">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h3 className="text-2xl font-semibold">¿Qué tipo de película prefieres?</h3>
+          <p className="text-gray-400 text-sm">
+            Personaliza las recomendaciones entre live action y distintos estilos de animación
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            className={`card text-left transition-all duration-300 border-2 ${
+              movieType === option.value
+                ? 'border-purple-500/80 bg-white/15'
+                : 'border-transparent hover:border-white/20'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">{option.badge}</span>
+              <p className="text-lg font-semibold">{option.label}</p>
+            </div>
+            <p className="text-sm text-gray-300">{option.description}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const Home: React.FC = () => {
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
+  const [movieType, setMovieType] = useState<MovieType>('live_action');
   
   const dispatch = useAppDispatch();
   const { data, loading, error } = useAppSelector((state) => state.recommendations);
@@ -18,6 +59,32 @@ export const Home: React.FC = () => {
   );
 
   const moods: Mood[] = ['Alegria', 'Tristeza', 'Miedo', 'Enojo', 'Asco'];
+
+  const movieTypeOptions: { value: MovieType; label: string; description: string; badge: string }[] = [
+    {
+      value: 'live_action',
+      label: 'Live Action',
+      description: 'Películas con actores reales',
+      badge: '🎬',
+    },
+    {
+      value: 'animation_3d',
+      label: 'Animación 3D / Stop Motion',
+      description: 'CGI, stop motion y estilos híbridos',
+      badge: '🧩',
+    },
+    {
+      value: 'animation_2d',
+      label: 'Animación 2D',
+      description: 'Estilo tradicional dibujado a mano',
+      badge: '✏️',
+    },
+  ];
+
+  const selectedMovieTypeLabel = useMemo(
+    () => movieTypeOptions.find((option) => option.value === movieType)?.label || 'Live Action',
+    [movieType]
+  );
 
   const handleMoodSelect = (mood: Mood) => {
     setSelectedMood(mood);
@@ -34,6 +101,7 @@ export const Home: React.FC = () => {
       fetchRecommendations({
         mood: selectedMood!,
         action,
+        movieType,
         watchedMovies: watchedTitles,
       })
     );
@@ -59,7 +127,7 @@ export const Home: React.FC = () => {
 
         <div className="card">
           <LoadingSpinner
-            message={`Obteniendo películas para ${actionLabel} tu ${selectedMood.toLowerCase()}...`}
+            message={`Obteniendo películas ${selectedMovieTypeLabel} para ${actionLabel} tu ${selectedMood.toLowerCase()}...`}
             subtitle="Esto puede tardar unos segundos mientras encontramos coincidencias perfectas"
           />
         </div>
@@ -89,6 +157,7 @@ export const Home: React.FC = () => {
           <p className="text-gray-300">
             {data.source === 'tmdb' ? '🎬 Recomendaciones de TMDB' : '🤖 Recomendaciones de IA'}
           </p>
+          <p className="text-sm text-gray-400 mt-1">Preferencia: {selectedMovieTypeLabel}</p>
           {excludeFromRecommendations && watchedMovies.length > 0 && (
             <p className="text-sm text-purple-300 mt-2">
               ✓ Excluyendo {watchedMovies.length} película(s) ya vista(s)
@@ -187,6 +256,12 @@ export const Home: React.FC = () => {
           <MoodButton key={mood} mood={mood} onClick={() => handleMoodSelect(mood)} />
         ))}
       </div>
+
+      <MovieTypeSelector
+        movieType={movieType}
+        options={movieTypeOptions}
+        onChange={setMovieType}
+      />
 
       <div className="mt-16 text-center">
         <div className="inline-block card max-w-md">

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MovieRecommendationResponse, Mood, Action } from '../types';
+import { Mood, Action, MovieRecommendationResponse, MovieType } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -13,6 +13,7 @@ const api = axios.create({
 export const getRecommendations = async (
   mood: Mood,
   action: Action,
+  movieType: MovieType,
   watchedMovies: string[] = []
 ): Promise<MovieRecommendationResponse> => {
   const response = await api.post<MovieRecommendationResponse>(
@@ -20,6 +21,7 @@ export const getRecommendations = async (
     {
       mood,
       action,
+      movieType,
       watchedMovies,
     }
   );

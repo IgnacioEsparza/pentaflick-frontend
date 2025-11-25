@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { WatchedMoviesState, WatchedMovie } from '../types';
+import { WatchedMoviesState } from '../types';
 
 const MAX_WATCHED_MOVIES = 50;
 

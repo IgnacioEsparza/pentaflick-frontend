@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { MovieRecommendationResponse, Mood, Action } from '../types';
+import { MovieRecommendationResponse, Mood, Action, MovieType } from '../types';
 import { getRecommendations } from '../services/api';
 
 interface RecommendationsState {
@@ -20,12 +20,13 @@ export const fetchRecommendations = createAsyncThunk(
     {
       mood,
       action,
+      movieType,
       watchedMovies,
-    }: { mood: Mood; action: Action; watchedMovies: string[] },
+    }: { mood: Mood; action: Action; movieType: MovieType; watchedMovies: string[] },
     { rejectWithValue }
   ) => {
     try {
-      const response = await getRecommendations(mood, action, watchedMovies);
+      const response = await getRecommendations(mood, action, movieType, watchedMovies);
       return response;
     } catch (error) {
       return rejectWithValue(
